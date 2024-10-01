@@ -25,10 +25,12 @@ def get_args() -> Namespace:
 
 if __name__ == '__main__':
     args = get_args()
+    if not os.path.exists(args.sample_dir):
+        os.makedirs(args.sample_dir)
     image_shape = (1, 28, 28) if args.dataset in ('MNIST', 'FashionMNIST') else (3, 32, 32)
     torch.manual_seed(args.seed)
     G = Generator(image_shape=image_shape, latent_dim=args.latent_dim).to(device)
-    G.load_state_dict(torch.load(args.g_ckpt))
+    G.load_state_dict(torch.load(args.g_ckpt, weights_only=True))
     for i in range(args.num_sample):
         noise = torch.rand(64, args.latent_dim).to(device)
         fake_images = G(noise)
