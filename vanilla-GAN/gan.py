@@ -26,10 +26,9 @@ class Discriminator(nn.Module):
         image_size = C * H * W
         self.model = nn.Sequential(
             nn.Linear(image_size, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
-            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
-            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
-            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
-            nn.Linear(512, 1), nn.Sigmoid())
+            nn.Linear(512, 256), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(256, 128), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(128, 1), nn.Sigmoid())
 
     def forward(self, images: Tensor) -> Tensor:
         """Forward pass in Discriminator.
@@ -48,7 +47,7 @@ class Generator(nn.Module):
     """
     Generator in GAN.
 
-    Model Architecture: [affine - leaky ReLU - dropout] x 3 - affine - tanh
+    Model Architecture: [affine - batchnorm - ReLU] x 3 - affine - tanh
     """
     def __init__(self, image_shape: tuple[int, int, int], latent_dim: int) -> None:
         """Initialize Generator in GAN.
@@ -62,11 +61,11 @@ class Generator(nn.Module):
         image_size = C * H * W
         self.image_shape = image_shape
         self.model = nn.Sequential(
-            nn.Linear(latent_dim, 512), nn.ReLU(),
-            nn.Linear(512, 512), nn.ReLU(),
-            nn.Linear(512, 512), nn.ReLU(),
-            nn.Linear(512, 512), nn.ReLU(),
-            nn.Linear(512, image_size), nn.Tanh())
+            nn.Linear(latent_dim, 128), nn.BatchNorm1d(128), nn.ReLU(),
+            nn.Linear(128, 256), nn.BatchNorm1d(256), nn.ReLU(),
+            nn.Linear(256, 512), nn.BatchNorm1d(512), nn.ReLU(),
+            nn.Linear(512, 1024), nn.BatchNorm1d(1024), nn.ReLU(),
+            nn.Linear(1024, image_size), nn.Tanh())
     
     def forward(self, z: Tensor) -> Tensor:
         """Forward pass in Generator.
