@@ -1,7 +1,7 @@
 """
 Vanilla GAN.
 
-Both Generator and Driscriminator are MLP.
+In this implementation, both Generator and Discrminator are defined as MultiLayer Perceptron.
 
 For more details, see: https://arxiv.org/abs/1406.2661
 """
@@ -10,61 +10,72 @@ from torch import nn
 from torch import Tensor
 
 class Discriminator(nn.Module):
-    def __init__(self, image_size: int) -> None:
-        super(Discriminator, self).__init__()
-        self.layer1 = affine_lkrelu_dropout(image_size, 1024)
-        self.layer2 = affine_lkrelu_dropout(1024, 512)
-        self.layer3 = affine_lkrelu_dropout(512, 256)
-        self.layer4 = affine_sigmoid(256, 1)
+    """
+    Disrcminator in GAN.
     
-    def forward(self, x: Tensor) -> Tensor:
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
-        return out
+    Model Architecture: [affine - leaky ReLU - dropout] x 3 - affine - sigmoid
+    """
+    def __init__(self, image_shape: tuple[int, int, int]) -> None:
+        """Initialize Discriminator in GAN.
+
+        Args:
+            image_shape(tuple[int, int, int]): shape of image.
+        """
+        super(Discriminator, self).__init__()
+        C, H, W = image_shape
+        image_size = C * H * W
+        self.model = nn.Sequential(
+            nn.Linear(image_size, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(512, 512), nn.LeakyReLU(0.2), nn.Dropout(0.3),
+            nn.Linear(512, 1), nn.Sigmoid())
+
+    def forward(self, images: Tensor) -> Tensor:
+        """Forward pass in Discriminator.
+
+        Args:
+            images(Tensor): input images, of shape (N, C, H, W)
+
+        Returns:
+            Tensor: probabilities for input images to be real data, of shape (N, 1).
+        """
+        images = images.view(images.size(0), -1)
+        return self.model(images)
 
 
 class Generator(nn.Module):
-    def __init__(self, image_size: int, latent_size: int) -> None:
+    """
+    Generator in GAN.
+
+    Model Architecture: [affine - leaky ReLU - dropout] x 3 - affine - tanh
+    """
+    def __init__(self, image_shape: tuple[int, int, int], latent_dim: int) -> None:
+        """Initialize Generator in GAN.
+
+        Args:
+            image_shape(tuple[int, int, int]): shape of image.
+            latent_dim(int): dimensionality of the latent space.
+        """
         super(Generator, self).__init__()
-        self.layer1 = affine_lkrelu(latent_size, 256)
-        self.layer2 = affine_lkrelu(256, 512)
-        self.layer3 = affine_lkrelu(512, 1024)
-        self.layer4 = affine_tanh(1024, image_size)
+        C, H, W = image_shape
+        image_size = C * H * W
+        self.image_shape = image_shape
+        self.model = nn.Sequential(
+            nn.Linear(latent_dim, 512), nn.ReLU(),
+            nn.Linear(512, 512), nn.ReLU(),
+            nn.Linear(512, 512), nn.ReLU(),
+            nn.Linear(512, 512), nn.ReLU(),
+            nn.Linear(512, image_size), nn.Tanh())
     
-    def forward(self, x: Tensor) -> Tensor:
-        out = self.layer1(x)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
-        return out
+    def forward(self, z: Tensor) -> Tensor:
+        """Forward pass in Generator.
 
+        Args:
+            z(Tensor): latent variables of shape (N, D) that sample from a distribution.
 
-# affine - leaky relu - dropout
-def affine_lkrelu_dropout(in_features: int, out_features: int) -> nn.Module:
-    return nn.Sequential(
-                nn.Linear(in_features, out_features),
-                nn.LeakyReLU(0.2),
-                nn.Dropout(0.3))
-
-
-# affine - leaky relu
-def affine_lkrelu(in_features: int, out_features: int) -> nn.Module:
-    return nn.Sequential(
-            nn.Linear(in_features, out_features),
-            nn.LeakyReLU(0.2))
-
-
-# affine - sigmoid
-def affine_sigmoid(in_features: int, out_features: int) -> nn.Module:
-    return nn.Sequential(
-        nn.Linear(in_features, out_features),
-        nn.Sigmoid())
-
-
-# affine - tanh
-def affine_tanh(in_features: int, out_features: int) -> nn.Module:
-    return nn.Sequential(
-        nn.Linear(in_features, out_features),
-        nn.Tanh())
+        Returns:
+            Tensor: fake images produced by Generator.
+        """
+        images: Tensor = self.model(z)
+        return images.view(-1, *self.image_shape)
