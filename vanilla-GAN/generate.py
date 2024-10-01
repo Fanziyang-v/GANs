@@ -19,7 +19,7 @@ def get_args() -> Namespace:
     parser.add_argument('--sample_dir', type=str, default='samples', help='directory of image samples')
     parser.add_argument('--num_sample', type=int, default=5, help='number of image samples')
     parser.add_argument('--dataset', type=str, default='MNIST', help='training dataset(MNIST | FashionMNIST | CIFAR10)')
-    parser.add_argument('--ckpt_dir', type=str, default='checkpoints', help='directory for saving model checkpoints')
+    parser.add_argument('--g_ckpt', type=str, help='generator model checkpoint')
     parser.add_argument('--seed', type=str, default=10213, help='random seed')
     return parser.parse_args()
 
@@ -28,6 +28,7 @@ if __name__ == '__main__':
     image_shape = (1, 28, 28) if args.dataset in ('MNIST', 'FashionMNIST') else (3, 32, 32)
     torch.manual_seed(args.seed)
     G = Generator(image_shape=image_shape, latent_dim=args.latent_dim).to(device)
+    G.load_state_dict(torch.load(args.g_ckpt))
     for i in range(args.num_sample):
         noise = torch.rand(64, args.latent_dim).to(device)
         fake_images = G(noise)
