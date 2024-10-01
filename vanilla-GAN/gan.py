@@ -47,7 +47,7 @@ class Generator(nn.Module):
     """
     Generator in GAN.
 
-    Model Architecture: [affine - batchnorm - ReLU] x 3 - affine - tanh
+    Model Architecture: [affine - batchnorm - ReLU] x 4 - affine - tanh
     """
     def __init__(self, image_shape: tuple[int, int, int], latent_dim: int) -> None:
         """Initialize Generator in GAN.
