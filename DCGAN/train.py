@@ -11,9 +11,12 @@ from dcgan import Generator, Discriminator
 # Image processing.
 transform_mnist = transforms.Compose([
     transforms.Resize(32),
-    transforms.ToTensor()])
+    transforms.ToTensor(),
+    transforms.Normalize(mean=(0.5), std=(0.5))])
 
-transform_cifar = transforms.ToTensor()
+transform_cifar = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
 
 # Device configuration.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -25,7 +28,6 @@ def denormalize(x: Tensor) -> Tensor:
 
 def init_weight(module: nn.Module) -> None:
     if isinstance(module, nn.Conv2d):
-        
         nn.init.normal_(module.weight, mean=0, std=0.02)
         nn.init.constant_(module.bias, 0)
 
