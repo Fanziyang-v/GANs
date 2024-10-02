@@ -49,7 +49,8 @@ def get_args() -> Namespace:
     parser.add_argument('--batch_size', type=int, default=64, help='size of a mini-batch')
     parser.add_argument('--gen_iters', type=int, default=100000, help='training epochs')
     parser.add_argument('--latent_dim', type=int, default=100, help='dimensionality of the latent space')
-    parser.add_argument('--n_critic', type=int, default=5, help='')
+    parser.add_argument('--n_critic', type=int, default=5, help='number of training iterations in discriminator per generator training iteration')
+    parser.add_argument('--clip_limit', type=float, default=0.01, help='clipping parameter for weight clipping')
     parser.add_argument('--dataset', type=str, default='MNIST', help='training dataset(MNIST | FashionMNIST | CIFAR10)')
     parser.add_argument('--sample_dir', type=str, default='samples', help='directory of image samples')
     parser.add_argument('--interval', type=int, default=1000, help='epoch interval between image samples')
@@ -121,6 +122,10 @@ def train(args: Namespace,
             d_loss.backward()
             optimizer_D.step()
             total_d_loss += d_loss
+
+            # Clip weight in [-c, c].
+        for params in D.parameters():
+            params.data.clamp_(min=-args.clip_limit, max=args.clip_limit)
         # ================================================================== #
         #                        Train the generator                         #
         # ================================================================== #
@@ -134,20 +139,20 @@ def train(args: Namespace,
         optimizer_G.zero_grad()
         g_loss.backward()
         optimizer_G.step()
+        
         print(f'''
 =====================================
 Step: [{i + 1}/{args.gen_iters}]
 Discriminator Loss: {total_d_loss / args.n_critic:.4f}
 Generator Loss: {g_loss:.4f}
 =====================================''')
-
         # Log Discriminator and Generator loss.
         writer.add_scalar('Discriminator Loss', total_d_loss / args.n_critic, i + 1)
         writer.add_scalar('Generator Loss', g_loss, i + 1)
-        fake_images: Tensor = G(fixed_noise)
-        img_grid = make_grid(denormalize(fake_images), nrow=8, padding=2)
-        writer.add_image('Fake Images', img_grid, i + 1)
         if (i + 1) % args.interval == 0:
+            fake_images: Tensor = G(fixed_noise)
+            img_grid = make_grid(denormalize(fake_images), nrow=8, padding=2)
+            writer.add_image('Fake Images', img_grid, (i + 1) // args.interval)
             save_image(img_grid, os.path.join(args.sample_dir, f'fake_images_{(i + 1) // args.interval}.png'))
     # Save the model checkpoints.
     torch.save(G.state_dict(), os.path.join(args.ckpt_dir, 'G.ckpt'))
