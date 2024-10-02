@@ -18,13 +18,7 @@ class Generator(nn.Module):
             num_channels(int): number of channels.
             latent_dim(int): dimensionality of the latent space.
         """
-        super(Generator, self).__init__()
-        def block(in_channels: int, out_channels: int) -> list[nn.Module]:
-            return [nn.Upsample(scale_factor=2),
-                     nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
-                     nn.BatchNorm2d(out_channels), 
-                     nn.ReLU()]
-        
+        super(Generator, self).__init__()        
         self.fc = nn.Linear(latent_dim, 1024 * 2 * 2)
         self.convs = nn.Sequential(
             nn.BatchNorm2d(1024),
