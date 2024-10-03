@@ -118,8 +118,8 @@ def train(args: Namespace,
             total_d_loss += d_loss
 
             # Clip weight in [-c, c].
-        for params in D.parameters():
-            params.data.clamp_(min=-args.clip_limit, max=args.clip_limit)
+            for params in D.parameters():
+                params.data.clamp_(min=-args.clip_limit, max=args.clip_limit)
         # ================================================================== #
         #                        Train the generator                         #
         # ================================================================== #
