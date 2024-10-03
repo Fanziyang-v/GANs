@@ -36,12 +36,6 @@ def generate(data_loader: DataLoader):
             yield images
 
 
-def init_weight(module: nn.Module) -> None:
-    if isinstance(module, nn.Conv2d):
-        nn.init.normal_(module.weight, mean=0, std=0.02)
-        nn.init.constant_(module.bias, 0)
-
-
 def get_args() -> Namespace:
     """Get commandline arguments."""
     parser = ArgumentParser()
@@ -167,8 +161,6 @@ def main() -> None:
     # Generator and Discrminator.
     G = Generator(num_channels=C, latent_dim=args.latent_dim).to(device)
     D = Discriminator(num_channels=C).to(device)
-    G.apply(init_weight)
-    D.apply(init_weight)
     train(args, G, D, data_loader)
 
 
