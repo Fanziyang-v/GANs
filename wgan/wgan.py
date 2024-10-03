@@ -53,9 +53,9 @@ class Discriminator(nn.Module):
         super(Discriminator, self).__init__()
         self.model = nn.Sequential(
             nn.Conv2d(num_channels, 128, kernel_size=5, stride=2, padding=2), nn.LeakyReLU(0.2),
-            nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2), nn.BatchNorm2d(256), nn.LeakyReLU(0.2),
-            nn.Conv2d(256, 512, kernel_size=5, stride=2, padding=2), nn.BatchNorm2d(512), nn.LeakyReLU(0.2),
-            nn.Conv2d(512, 1024, kernel_size=5, stride=2, padding=2), nn.BatchNorm2d(1024), nn.LeakyReLU(0.2),
+            nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2), nn.LeakyReLU(0.2),
+            nn.Conv2d(256, 512, kernel_size=5, stride=2, padding=2), nn.LeakyReLU(0.2),
+            nn.Conv2d(512, 1024, kernel_size=5, stride=2, padding=2), nn.LeakyReLU(0.2),
             nn.Flatten(), nn.Linear(1024 * 2 * 2, 1))
     
     def forward(self, images: Tensor) -> Tensor:
