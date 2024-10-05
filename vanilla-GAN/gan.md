@@ -4,21 +4,21 @@
 
 ## Model Architecture
 In this implementation, both Generator and Discriminator are defined as Multi Layer Perceptron with 4 hidden layers.
-- ***Generator***: [affine - batchnorm - relu - dropout] x 4 - affine - sigmoid
-- ***Discriminator***: [affine - leaky relu] x 3 - affine - tanh
+- ***Generator***: [affine - batchnorm - relu] x 4 - affine - sigmoid
+- ***Discriminator***: [affine - leaky relu - dropout] x 3 - affine - tanh
 
 ## Training Details
 
-**Hyper parameters**:
-
-| Hyper Parameter  | Default Value |
-| ---------------- | ------------- |
-| learning rate    | 0.0002        |
-| betas            | (0.5, 0.999)  |
-| batch size       | 64            |
-| latent dimension | 100           |
-| number of epochs | 100           |
-| k                | 1             |
+| Hyper Parameter              | Default Value |
+| ---------------------------- | ------------- |
+| learning rate                | 0.0002        |
+| betas                        | (0.5, 0.999)  |
+| batch size                   | 64            |
+| latent dimension             | 100           |
+| number of epochs             | 100           |
+| negative slope of Leaky ReLU | 0.2           |
+| dropout ratio                | 0.3           |
+| k                            | 1             |
 
 I follow the training algorithm in original [Generative Adversarial Nets](https://arxiv.org/abs/1406.2661) paper. The details are described in the following picture.
 
